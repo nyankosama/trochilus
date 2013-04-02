@@ -1,15 +1,21 @@
-torchilus:server client print
-server: wrap.o wrap.h server.o 
-	gcc wrap.o server.o -o server
+CC=gcc
+SRC=src
+INC=include
+CFLAGS=-I. -Wall -c
+OBJS=wrap.o server.o client.o 
+TARGET=server client
+
+torchilus: server.o client.o wrap.o
+	$(CC) wrap.o server.o -o server
+	$(CC) client.o wrap.o -o client
 server.o: server.c wrap.h
-	gcc -c server.c
-client: client.o wrap.o 
-	gcc client.o wrap.o -o client
+	$(CC) $(CFLAGS) server.c
+client.o: client.c wrap.h
+	$(CC) $(CFLAGS) client.c
 wrap.o: wrap.h wrap.c
-	gcc -c wrap.c
-print: test.c
-	gcc test.c -o print
+	$(CC) $(CFLAGS) wrap.c
+
 clean: 
 	@echo "cleaning project"
-	-rm *.o server print client
+	-rm *.o server client
 	@echo "clean finished"

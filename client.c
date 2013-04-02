@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include "wrap.h"
 
 #define MAXLINE 80
 #define SERV_PORT 8000
@@ -18,7 +21,7 @@ void str_cli(FILE *fp, int sockfd);
 int main(int argc, char **argv)
 {
 	struct sockaddr_in servaddr;
-	int sockfd, n;
+	int sockfd;
 
 	if (argc != 2) {
 		fputs("usage: tcpcli <IPaddress>\n", stderr);

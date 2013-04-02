@@ -12,7 +12,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include "wrap.h"
 
@@ -31,7 +33,6 @@ int main(int argc, char **argv)
 	socklen_t cliaddr_len;
 	int listenfd, connfd;
 	char str[INET_ADDRSTRLEN];
-	int i, n;
 	pid_t childpid;
 
 	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
@@ -57,14 +58,28 @@ int main(int argc, char **argv)
 			printf("received from %s at PORT %d\n", 
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
 				ntohs(cliaddr.sin_port));
-			respond(connfd);
-//			str_echo(connfd);
+//			respond(connfd);
+			str_echo(connfd);
 			exit(0);
 		}
 	}
 	
 	Close(connfd);
 	return 0;
+}
+
+void str_echo(int connfd)
+{
+	ssize_t n;
+	char line[MAXLINE];
+	for (; ; ) {
+		if ( (n = readline(connfd, line, MAXLINE)) == 0) {
+			printf("%s\n", line);
+			return;
+		}
+		writen(connfd, line, strlen(line));
+	}
+
 }
 
 void respond(int connfd)
@@ -104,7 +119,6 @@ void respond(int connfd)
 }
 
 void sendfile(const char *path,int connfd){
-	int fd;
 	char response[] = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html></html>\n";
 	writen(connfd, response, strlen(response));
 }
