@@ -23,11 +23,6 @@ int main(int argc, char **argv)
 	struct sockaddr_in servaddr;
 	int sockfd;
 
-	if (argc != 2) {
-		fputs("usage: tcpcli <IPaddress>\n", stderr);
-		exit(1);
-	}
-
 	sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
 	bzero(&servaddr, sizeof(servaddr));

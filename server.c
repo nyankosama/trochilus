@@ -23,9 +23,26 @@
 
 void str_echo(int sockfd);
 void sig_child(int signo);
-void sendfile(const char *path,int connfd);
-void outcgi(const char *path, int connfd);
-void respond(int connfd);
+
+/**
+ * Parse http request.
+ * Store the request information into a stuct.
+ * Determine whether the file can be found.
+ * Determine whether the file is executable.
+ */
+void parse_request(int fd);
+/**
+ * Read the file and send back the content.  
+ */
+void file_handle(int fd);
+/**
+ * execute the file and send back the output.
+ */
+void cgi_handle(int fd);
+/**
+ * send a not found error for the client.
+ */
+void notfound_handle(int fd);
 
 int main(int argc, char **argv)
 {
@@ -58,7 +75,6 @@ int main(int argc, char **argv)
 			printf("received from %s at PORT %d\n", 
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
 				ntohs(cliaddr.sin_port));
-//			respond(connfd);
 			str_echo(connfd);
 			exit(0);
 		}
@@ -77,55 +93,11 @@ void str_echo(int connfd)
 			printf("%s\n", line);
 			return;
 		}
+		printf("%s", line);
 		writen(connfd, line, strlen(line));
 	}
-
 }
 
-void respond(int connfd)
-{
-	ssize_t n;
-	char line[MAXLINE];
-	char *token, *path;
-	struct stat stbuf;
-	for (; ; ) {
-		if ( (n = readline(connfd, line, MAXLINE)) == 0) {
-			return;
-		}
-		token = strtok(line, " ");
-		if (token != NULL && strcmp(token, "GET") == 0) {
-			token = strtok(NULL, " ");
-			token = strtok(token, "/");
-			if (token == NULL) {
-				printf("index.html\n");
-				path = "index.html";
-			} else {
-				printf("%s\n", token);
-				path = token;
-			}
-			if (stat(path, &stbuf) < 0){
-				fputs("error!!!!", stderr);
-				continue;
-			}
-			if (stbuf.st_mode & S_IEXEC) {
-				outcgi(path, connfd);
-				printf("cgi\n");
-			} else {
-				sendfile(path, connfd);
-				printf("file\n");
-			}
-		}
-	}
-}
-
-void sendfile(const char *path,int connfd){
-	char response[] = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html></html>\n";
-	writen(connfd, response, strlen(response));
-}
-
-void outcgi(const char *path, int connfd){
-
-}
 
 void sig_child(int signo)
 {
