@@ -26,11 +26,15 @@ int main(int argc, char **argv)
 {
 	struct sockaddr_in servaddr, cliaddr;
 	socklen_t cliaddr_len;
-	int listenfd, connfd;
+	int listenfd, connfd, on;
 	char str[INET_ADDRSTRLEN];
 	pid_t childpid;
+	
 
 	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+	on = 1;
+	setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
@@ -54,14 +58,14 @@ int main(int argc, char **argv)
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
 				ntohs(cliaddr.sin_port));
 
-//			str_echo(connfd);
+//				str_echo(connfd);
 				http_respond(connfd);
 
 			exit(0);
 		}
 	}
 	
-	Close(connfd);
+	Close(listenfd);
 	return 0;
 }
 

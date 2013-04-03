@@ -15,25 +15,27 @@ typedef struct req_header {
 /**
  * do related handle and give request according to HTTP.
  */
-void http_respond(int fd);
+void http_respond(const int fd);
 /**
  * Parse http request.
  * Store the request information into a stuct.
- * Determine whether the file can be found.
- * Determine whether the file is executable.
+ * Check the file state.
+ * If the file couldn't be found, return 1.
+ * If the file couldn't be executed, return 0.
+ * If the file could be executed, return 1.
  */
-void parse_request(int fd);
+int parse_request(const char *buf, Req_header *header);
 /**
  * Read the file and send back the content.  
  */
-void file_handle(int fd);
+void file_handle(const int fd, const Req_header *header);
 /**
  * execute the file and send back the output.
  */
-void cgi_handle(int fd);
+void cgi_handle(const int fd, const Req_header *header);
 /**
  * send a not found error for the client.
  */
-void notfound_handle(int fd);
+void notfound_handle(const int fd);
 #endif
 

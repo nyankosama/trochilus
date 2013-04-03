@@ -4,6 +4,11 @@ INC=include
 CFLAGS=-I. -Wall -c
 OBJS=wrap.o http.o assist.o server.o 
 TARGET=server 
+ifeq ($(DEBUG),)
+	CFLAGS += -g -DDEBUG 
+else
+	CFLAGS += -O2
+endif
 
 torchilus: $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET)
@@ -17,6 +22,7 @@ http.o: http.h http.c
 	$(CC) $(CFLAGS) http.c
 
 clean: 
-	@echo "cleaning project"
-	-rm *.o server 
-	@echo "clean finished"
+	echo "cleaning project"
+	rm -f $(OBJS)
+	rm -f $(TARGET)
+	echo "clean finished"
