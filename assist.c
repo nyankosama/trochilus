@@ -25,6 +25,10 @@ void sig_child(int signo)
 	pid_t pid;
 	int stat;
 	pid = wait(&stat);
+
+#ifdef DEBUG
 	printf("child %d terminated\n", pid);
+#endif
+
 	return;
 }

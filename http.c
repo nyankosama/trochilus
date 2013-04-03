@@ -11,7 +11,6 @@
  */
 void http_respond(const int fd)
 {
-	ssize_t n;
 	char line[MAXLINE];
 	char buf[MAXLINE];
 	Req_header header;
@@ -21,8 +20,9 @@ void http_respond(const int fd)
 #ifdef DEBUG
 	fprintf(stderr, "%s", buf);
 #endif
+
 	for (; ; ) {
-		n = readline(fd, line, MAXLINE);
+		readline(fd, line, MAXLINE);
 #ifdef DEBUG
 		fprintf(stderr, "%s", line);
 #endif
@@ -44,7 +44,7 @@ void http_respond(const int fd)
 		cgi_handle(fd, &header);
 	}
 
-	close(fd);
+	Close(fd);
 }
 
 
@@ -59,7 +59,8 @@ void http_respond(const int fd)
 int parse_request(const char *buf, Req_header *header)
 {
 
-	return 0;
+	
+	return -1;
 }
 
 
@@ -86,5 +87,9 @@ void cgi_handle(const int fd, const Req_header *header)
  */
 void notfound_handle(const int fd)
 {
-
+	char resp_header[] = "HTTP/1.1 404 Not Found\n"
+						"Content-Type: text/html\n\n";
+	char resp[200];
+	sprintf(resp, "%s%s", resp_header, "<html><body>404 Not found</body></html>\r\n");
+	writen(fd, resp, strlen(resp));
 }
