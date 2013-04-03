@@ -17,32 +17,10 @@
 #include <arpa/inet.h>
 
 #include "wrap.h"
+#include "http.h"
+#include "assist.h"
 
-#define MAXLINE 80
 #define SERV_PORT 8000
-
-void str_echo(int sockfd);
-void sig_child(int signo);
-
-/**
- * Parse http request.
- * Store the request information into a stuct.
- * Determine whether the file can be found.
- * Determine whether the file is executable.
- */
-void parse_request(int fd);
-/**
- * Read the file and send back the content.  
- */
-void file_handle(int fd);
-/**
- * execute the file and send back the output.
- */
-void cgi_handle(int fd);
-/**
- * send a not found error for the client.
- */
-void notfound_handle(int fd);
 
 int main(int argc, char **argv)
 {
@@ -75,7 +53,10 @@ int main(int argc, char **argv)
 			printf("received from %s at PORT %d\n", 
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
 				ntohs(cliaddr.sin_port));
-			str_echo(connfd);
+
+//			str_echo(connfd);
+				http_respond(connfd);
+
 			exit(0);
 		}
 	}
@@ -84,26 +65,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void str_echo(int connfd)
-{
-	ssize_t n;
-	char line[MAXLINE];
-	for (; ; ) {
-		if ( (n = readline(connfd, line, MAXLINE)) == 0) {
-			printf("%s\n", line);
-			return;
-		}
-		printf("%s", line);
-		writen(connfd, line, strlen(line));
-	}
-}
 
-
-void sig_child(int signo)
-{
-	pid_t pid;
-	int stat;
-	pid = wait(&stat);
-	printf("child %d terminated\n", pid);
-	return;
-}

@@ -2,20 +2,21 @@ CC=gcc
 SRC=src
 INC=include
 CFLAGS=-I. -Wall -c
-OBJS=wrap.o server.o client.o 
-TARGET=server client
+OBJS=wrap.o http.o assist.o server.o 
+TARGET=server 
 
-torchilus: server.o client.o wrap.o
-	$(CC) wrap.o server.o -o server
-	$(CC) client.o wrap.o -o client
+torchilus: $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET)
 server.o: server.c wrap.h
 	$(CC) $(CFLAGS) server.c
-client.o: client.c wrap.h
-	$(CC) $(CFLAGS) client.c
 wrap.o: wrap.h wrap.c
 	$(CC) $(CFLAGS) wrap.c
+assist.o: assist.h assist.c
+	$(CC) $(CFLAGS) assist.c
+http.o: http.h http.c
+	$(CC) $(CFLAGS) http.c
 
 clean: 
 	@echo "cleaning project"
-	-rm *.o server client
+	-rm *.o server 
 	@echo "clean finished"
