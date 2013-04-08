@@ -1,8 +1,8 @@
 CC=gcc
 SRC=src
-INC=include
-CFLAGS=-I. -Wall -c
-OBJS=wrap.o http.o assist.o server.o 
+INC=../include
+CFLAGS=-I$(INC) -Wall -c
+OBJS=logger.o wrap.o http.o assist.o server.o 
 TARGET=server 
 ifeq ($(DEBUG),)
 	CFLAGS += -g -DDEBUG 
@@ -12,14 +12,16 @@ endif
 
 torchilus: $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET)
-server.o: server.c wrap.h
+server.o: server.c
 	$(CC) $(CFLAGS) server.c
-wrap.o: wrap.h wrap.c
+wrap.o: wrap.c
 	$(CC) $(CFLAGS) wrap.c
-assist.o: assist.h assist.c
+assist.o: assist.c
 	$(CC) $(CFLAGS) assist.c
-http.o: http.h http.c
+http.o: http.c
 	$(CC) $(CFLAGS) http.c
+logger.o: logger.c
+	$(CC) $(CFLAGS) logger.c
 
 clean: 
 	echo "cleaning project"

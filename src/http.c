@@ -7,7 +7,7 @@
 #include "http.h"
 #include "wrap.h"
 
-#define ROOTDIR "htdocs"
+#define ROOTDIR "../htdocs"
 
 int get_file_type(const char *filename);
 
@@ -31,9 +31,6 @@ void http_respond(const int fd)
 
 	for (; ; ) {
 		readline(fd, line, MAXLINE);
-#ifdef DEBUG
-		fprintf(stderr, "%s", line);
-#endif
 		//checks http header end
 		if (strcmp(line, "\r\n") == 0) {
 			break;
