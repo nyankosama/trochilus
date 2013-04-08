@@ -3,8 +3,7 @@
 
 #include "wrap.h"
 
-
-enum Req_method {GET, HEAD, UNIMPLEMENTED};
+enum Req_method {GET, POST, UNIMPLEMENTED};
 
 typedef struct req_header {
 	enum Req_method method;
