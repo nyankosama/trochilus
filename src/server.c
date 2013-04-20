@@ -54,26 +54,24 @@ int main(int argc, char **argv)
 	while (1) {
 		cliaddr_len = sizeof(cliaddr);
 		connfd = Accept(listenfd, (struct sockaddr *)&cliaddr, &cliaddr_len);
-		if ( (childpid = fork()) == 0) {
-			Close(listenfd);/* 关闭子进程中不用的描述符 */
 
 #ifdef DEBUG
-			printf("received from %s at PORT %d\n", 
-				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
-				ntohs(cliaddr.sin_port));
+		printf("received from %s at PORT %d\n", 
+			(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
+			ntohs(cliaddr.sin_port));
 #endif
 
-//				str_echo(connfd);
-				http_respond(connfd);
-
+		if ( (childpid = fork()) == 0) {
+			Close(listenfd);/* 关闭子进程中不用的描述符 */
+			serv_proc(connfd);
+		//	http_respond(connfd);
 			exit(0);
 		}
-		// close the connection file descriptor in the parent process
+		// 关闭父进程中不用的文件描述符
 		Close(connfd);
 	}
-	
+
 	Close(listenfd);
 	return 0;
 }
-
 
