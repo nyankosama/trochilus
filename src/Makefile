@@ -2,7 +2,7 @@ CC=gcc
 SRC=src
 INC=../include
 CFLAGS=-I$(INC) -Wall -c
-OBJS=logger.o wrap.o http.o assist.o server.o 
+OBJS=logger.o wrap.o http.o assist.o cgi.o serv_proc.o server.o  
 TARGET=server 
 ifeq ($(DEBUG),)
 	CFLAGS += -g -DDEBUG 
@@ -22,6 +22,10 @@ http.o: http.c
 	$(CC) $(CFLAGS) http.c
 logger.o: logger.c
 	$(CC) $(CFLAGS) logger.c
+cgi.o: cgi.c
+	$(CC) $(CFLAGS) cgi.c
+serv_proc.o: serv_proc.c
+	$(CC) $(CFLAGS) serv_proc.c
 
 clean: 
 	echo "cleaning project"

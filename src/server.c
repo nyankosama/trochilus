@@ -17,8 +17,8 @@
 #include <arpa/inet.h>
 
 #include "wrap.h"
-#include "http.h"
 #include "assist.h"
+#include "serv_proc.h"
 
 #define SERV_PORT 8000
 
@@ -55,13 +55,13 @@ int main(int argc, char **argv)
 		cliaddr_len = sizeof(cliaddr);
 		connfd = Accept(listenfd, (struct sockaddr *)&cliaddr, &cliaddr_len);
 
-#ifdef DEBUG
-		printf("received from %s at PORT %d\n", 
-			(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
-			ntohs(cliaddr.sin_port));
-#endif
 
 		if ( (childpid = fork()) == 0) {
+#ifdef DEBUG
+			fprintf(stderr, "received from %s at PORT %d\n", 
+				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
+				ntohs(cliaddr.sin_port));
+#endif
 			Close(listenfd);/* 关闭子进程中不用的描述符 */
 			serv_proc(connfd);
 		//	http_respond(connfd);

@@ -14,60 +14,16 @@ int get_file_type(const char *filename);
 static const char content_types[][15] = {
 	"text/html", "image/png"
 };
-/**
- * do related handle and give request according to HTTP.
- */
-void http_respond(const int fd)
-{
-	char line[MAXLINE];
-	char buf[MAXLINE];
-	Req_header header;
-	int stat;
-
-	readline(fd, buf, MAXLINE);
-#ifdef DEBUG
-	fprintf(stderr, "%s", buf);
-#endif
-
-	for (; ; ) {
-		readline(fd, line, MAXLINE);
-		//checks http header end
-		if (strcmp(line, "\r\n") == 0) {
-			break;
-		}
-	}
-
-#ifdef DEBUG
-	printf("end of request\n");
-#endif
-
-	if ( ( stat = parse_request(buf, &header)) == -1) {
-		notfound_handle(fd);
-	} else if (stat == 0) {
-		file_handle(fd, &header);
-	} else if (stat == 1){
-		cgi_handle(fd, &header);
-	}
-
-	Close(fd);
-}
-
 
 /**
  * Parse http request.
- * Store the request information into a stuct.
- * Check the file state.
- * If the file couldn't be found, return -1.
- * If the file couldn't be executed, return 0.
- * If the file could be executed, return 1.
+ * Store the request information into header.
  */
-int parse_request(const char *buf, Req_header *header)
+void parse_request(const char *buf, Req_header *header)
 {
 	char method[10];
 	char httptype[20];
 	char url[255];
-
-	struct stat st;
 
 	sscanf(buf, "%s%s%s", method, url, httptype);
 
@@ -83,17 +39,35 @@ int parse_request(const char *buf, Req_header *header)
 		header->method = UNIMPLEMENTED;
 
 	//设置header的locator
-	sprintf(header->locator, "%s%s", ROOTDIR, url);
+	sprintf(header->locator, "%s", url);
 
-	//获取文件信息，判断返回值
-	if ( stat( header->locator , &st) == -1){
-		//未找到文件
-		return -1;
-	} else if( ( st.st_mode & S_IXOTH) == S_IXOTH){
-		return 1;
-	} else {
-		return 0;
+}
+
+/**
+ * do related handle and give request according to HTTP.
+ */
+void http_respond(const int fd, const Req_header *header)
+{
+	char line[MAXLINE];
+
+	for (; ; ) {
+		readline(fd, line, MAXLINE);
+#ifdef DEBUG
+		fprintf(stderr, "%s", line);
+#endif
+		//checks http header end
+		if (strcmp(line, "\r\n") == 0) {
+			break;
+		}
 	}
+
+#ifdef DEBUG
+	printf("end of request header\n");
+#endif
+
+	file_handle(fd, header);
+
+	Close(fd);
 }
 
 
@@ -103,9 +77,12 @@ int parse_request(const char *buf, Req_header *header)
 void file_handle(const int fd, const Req_header *header)
 {
 	FILE *fp = NULL;
+	char url[255];
+	sprintf(url, "%s%s", ROOTDIR, header->locator);
 	
-	fp = fopen(header->locator , "r");
+	fp = fopen(url, "r");
 	if(fp == NULL){
+		//未找到文件
 		notfound_handle(fd);
 	}else{
 		char buf[1024]="\0";
@@ -127,16 +104,6 @@ void file_handle(const int fd, const Req_header *header)
 		fclose(fp);
 	}
 }
-
-
-/**
- */
-void cgi_handle(const int fd, const Req_header *header)
-{
-	dup2(fd, STDOUT_FILENO);
-	execl("/bin/sh", "sh", header->locator, NULL);
-}
-
 
 /**
  * send a not found error for the client.
