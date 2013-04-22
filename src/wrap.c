@@ -10,8 +10,6 @@
 #include <sys/socket.h>
 #include <signal.h>
 
-#define MAXLINE 80
-
 typedef void Sigfunc(int);
 
 void perr_exit(const char *s)

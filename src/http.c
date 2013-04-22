@@ -25,21 +25,35 @@ void parse_request(const char *buf, Req_header *header)
 	char httptype[20];
 	char url[255];
 
+	char delims[] = "?";
+	char *result = NULL;
+
 	sscanf(buf, "%s%s%s", method, url, httptype);
 
 	//设置header的http_type
 	sscanf(httptype, "HTTP/1.%d", &header->http_type);
+	setenv("SERVER_PROTOCOL", httptype, 1);
 
 	//设置header的method
-	if(strcasecmp(method, "GET")==0)
+	if (strcasecmp(method, "GET")==0) {
 		header->method = GET;
-	else if(strcasecmp(method, "POST")==0)
+		setenv("REQUEST_METHOD", "GET", 1);
+	} else if (strcasecmp(method, "POST")==0) {
 		header->method = POST;
-	else
+		setenv("REQUEST_METHOD", "POST", 1);
+	} else {
 		header->method = UNIMPLEMENTED;
+		setenv("REQUEST_METHOD", "UNIMPLEMENTED", 1);
+	}
 
 	//设置header的locator
-	sprintf(header->locator, "%s", url);
+	result = strtok(url, delims);
+	setenv("REQUEST_URI", result, 1);
+	sprintf(header->locator, "%s", result);
+
+	if ( (result = strtok(NULL, delims)) != NULL) {
+		setenv("QUERY_STRING", result, 1);
+	}
 
 }
 

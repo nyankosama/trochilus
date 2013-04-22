@@ -22,9 +22,6 @@ void serv_proc(int fd){
 	parse_request(buf, &header);
 
 	result = strtok(header.locator, delims);
-	if (header.method == POST) {
-		cgi_handle(fd, &header);
-	}
 
 	if (strcmp(result, "cgi-bin") == 0) {
 		cgi_handle(fd, &header);

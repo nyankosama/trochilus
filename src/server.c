@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 
 
 		if ( (childpid = fork()) == 0) {
+			
 #ifdef DEBUG
 			fprintf(stderr, "received from %s at PORT %d\n", 
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
