@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 
 
 		if ( (childpid = fork()) == 0) {
+			clearenv();
 			
 #ifdef DEBUG
 			fprintf(stderr, "received from %s at PORT %d\n", 
@@ -65,10 +66,9 @@ int main(int argc, char **argv)
 #endif
 			Close(listenfd);/* 关闭子进程中不用的描述符 */
 			serv_proc(connfd);
-		//	http_respond(connfd);
 			exit(0);
 		}
-		// 关闭父进程中不用的文件描述符
+		/* 关闭父进程中不用的文件描述符 */
 		Close(connfd);
 	}
 

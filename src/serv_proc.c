@@ -21,7 +21,10 @@ void serv_proc(int fd){
 
 	parse_request(buf, &header);
 
-	result = strtok(header.locator, delims);
+	
+	memset(buf, 0, MAXLINE);
+	strcpy(buf, header.locator);
+	result = strtok(buf, delims);
 
 	if (strcmp(result, "cgi-bin") == 0) {
 		cgi_handle(fd, &header);

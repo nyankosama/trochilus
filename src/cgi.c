@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "cgi.h"
 #include "wrap.h"
@@ -9,6 +13,7 @@
 #define CGIDIR "../cgi-bin/"
 
 void set_metavar(char line[]);
+int get_cginame(const Req_header *header, char cginame[]);
 
 void cgi_handle(const int fd, const Req_header *header)
 {
@@ -42,12 +47,65 @@ void cgi_handle(const int fd, const Req_header *header)
 
 void get_handle(const int fd, const Req_header *header)
 {
+	extern char **environ;
 
+	char buf[MAXLINE], *emptylist[] = {NULL};
+	pid_t pid;
+	char cgi_name[MAXLINE];
+
+	sprintf(buf, "HTTP/1.1 200 OK\r\nServer:trochilus\r\n");
+	writen(fd, buf, strlen(buf));
+
+	if ( (pid = fork()) == 0) {
+		if (get_cginame(header, cgi_name) != 0) {
+			return;
+		}
+
+		dup2(fd, STDOUT_FILENO);
+		execve(cgi_name, emptylist, environ);
+		Close(fd);
+	} else {
+		waitpid(pid, NULL, 0);
+		Close(fd);
+	}
 }
 
 void post_handle(const int fd, const Req_header *header)
 {
+	extern char **environ;
 
+	char buf[MAXLINE], *emptylist[] = {NULL};
+	pid_t pid;
+	char cgi_name[MAXLINE];
+
+	char post_var[LONGLINE];
+	int length;
+	int filedes[2];
+	pipe(filedes);
+
+	length = atoi(getenv("CONTENT_LENGTH"));
+	readn(fd, post_var, length);
+	writen(filedes[1], post_var, length);
+
+	sprintf(buf, "HTTP/1.1 200 OK\r\nServer:trochilus\r\n");
+	writen(fd, buf, strlen(buf));
+
+	if ( (pid = fork()) == 0) {
+		Close(filedes[1]);
+		if (get_cginame(header, cgi_name) != 0) {
+			return;
+		}
+
+		dup2(filedes[0], STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		execve(cgi_name, emptylist, environ);
+		Close(fd);
+	} else {
+		Close(filedes[1]);
+		Close(filedes[0]);
+		waitpid(pid, NULL, 0);
+		Close(fd);
+	}
 }
 
 void head_handle(const int fd, const Req_header *header)
@@ -81,9 +139,25 @@ void set_metavar(char line[])
 		setenv("HTTP_ACCEPT_CHARSET", strtok(NULL, delims), 1);
 	} else if (strcmp(result, "Connection") == 0) {
 		setenv("HTTP_CONNECTION", strtok(NULL, delims), 1);
-	} else if (strcmp(result, "Connection") == 0) {
-
+	} else if (strcmp(result, "Content-Length") == 0) {
+		setenv("CONTENT_LENGTH", strtok(NULL, delims), 1);
 	}
 }
 
 
+int get_cginame(const Req_header *header, char cgi_name[])
+{
+	char buf[MAXLINE];
+	char *result = NULL;
+	char delims[] = "/";
+
+	strcpy(buf, header->locator);
+	strtok(buf, delims);
+	if ( (result = strtok(NULL, delims)) == NULL) {
+		return 1;
+	} else {
+		sprintf(cgi_name, "%s%s", CGIDIR, result);
+		return 0;
+	}
+
+}
