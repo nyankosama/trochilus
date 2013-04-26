@@ -6,6 +6,7 @@
 #include "serv_proc.h"
 #include "http.h"
 #include "cgi.h"
+#include "logger.h"
 
 void serv_proc(int fd){
 	char buf[MAXLINE];
@@ -31,6 +32,8 @@ void serv_proc(int fd){
 	} else {
 		http_respond(fd, &header);
 	}
+
+	servlog(LOG_INFO, "[client:%s][%s] %d\n", "192.168.1.1", "GET /index.html HTTP/1.1", 200);
 
 }
 

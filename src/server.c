@@ -20,8 +20,10 @@
 #include "assist.h"
 #include "serv_proc.h"
 #include "config.h"
+#include "logger.h"
 
 #define CONFIGPATH "../conf/trochilus.conf"
+#define LOGPATH "/var/log/trochilus/trochilus.log"
 
 int main(int argc, char **argv)
 {
@@ -37,6 +39,8 @@ int main(int argc, char **argv)
 	if (readconfig(CONFIGPATH) !=0 ) {
 		return 1;
 	}
+
+	openlog(LOGPATH);
 
 	serv_port = atoi(getenv("PORT"));
 
@@ -65,12 +69,13 @@ int main(int argc, char **argv)
 		connfd = Accept(listenfd, (struct sockaddr *)&cliaddr, &cliaddr_len);
 
 		if ( (childpid = fork()) == 0) {
-			
+
 #ifdef DEBUG
 			fprintf(stderr, "received from %s at PORT %d\n", 
 				(char *)inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
 				ntohs(cliaddr.sin_port));
 #endif
+
 			Close(listenfd);/* 关闭子进程中不用的描述符 */
 			serv_proc(connfd);
 			exit(0);

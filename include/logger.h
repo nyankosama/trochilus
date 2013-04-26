@@ -1,11 +1,17 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <stdarg.h>
+typedef enum LOG_TYPE {
+	LOG_INFO,
+	LOG_DEBUG,
+	LOG_ERROR
+} LOG_T;
 
-void servlog(int priority, const char *format, ...);
+void servlog(LOG_T priority, const char *format, ...);
 
-void vservlog(int priority, const char *format, va_list ap);
+void openlog(const char *path);
+
+int closelog();
 
 #endif
 
