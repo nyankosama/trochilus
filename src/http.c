@@ -6,8 +6,7 @@
 
 #include "http.h"
 #include "wrap.h"
-
-#define ROOTDIR "../htdocs"
+#include "config.h"
 
 int get_file_type(const char *filename);
 
@@ -92,8 +91,12 @@ void file_handle(const int fd, const Req_header *header)
 {
 	FILE *fp = NULL;
 	char url[255];
-	sprintf(url, "%s%s", ROOTDIR, header->locator);
-	
+	sprintf(url, "%s%s", getconfig("ROOTDIR"), header->locator);
+
+#ifdef DEBUG
+	fprintf(stderr, "%s", url);
+#endif
+
 	fp = fopen(url, "r");
 	if(fp == NULL){
 		//未找到文件

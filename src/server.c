@@ -19,8 +19,9 @@
 #include "wrap.h"
 #include "assist.h"
 #include "serv_proc.h"
+#include "config.h"
 
-#define SERV_PORT 8000
+#define CONFIGPATH "../conf/trochilus.conf"
 
 int main(int argc, char **argv)
 {
@@ -29,7 +30,15 @@ int main(int argc, char **argv)
 	int listenfd, connfd, on;
 	char str[INET_ADDRSTRLEN];
 	pid_t childpid;
-	
+	int serv_port;
+
+	clearenv();
+
+	if (readconfig(CONFIGPATH) !=0 ) {
+		return 1;
+	}
+
+	serv_port = atoi(getenv("PORT"));
 
 	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
@@ -39,7 +48,7 @@ int main(int argc, char **argv)
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(SERV_PORT);
+	servaddr.sin_port = htons(serv_port);
 
 	Bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
@@ -55,9 +64,7 @@ int main(int argc, char **argv)
 		cliaddr_len = sizeof(cliaddr);
 		connfd = Accept(listenfd, (struct sockaddr *)&cliaddr, &cliaddr_len);
 
-
 		if ( (childpid = fork()) == 0) {
-			clearenv();
 			
 #ifdef DEBUG
 			fprintf(stderr, "received from %s at PORT %d\n", 

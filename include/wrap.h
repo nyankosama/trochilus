@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 
 #define MAXLINE 80
+#define LONGLINE 1024
 
 typedef void Sigfunc(int);
 

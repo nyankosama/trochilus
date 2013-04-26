@@ -8,9 +8,7 @@
 #include "cgi.h"
 #include "wrap.h"
 #include "http.h"
-
-#define LONGLINE 1024
-#define CGIDIR "../cgi-bin/"
+#include "config.h"
 
 void set_metavar(char line[]);
 int get_cginame(const Req_header *header, char cginame[]);
@@ -156,7 +154,7 @@ int get_cginame(const Req_header *header, char cgi_name[])
 	if ( (result = strtok(NULL, delims)) == NULL) {
 		return 1;
 	} else {
-		sprintf(cgi_name, "%s%s", CGIDIR, result);
+		sprintf(cgi_name, "%s%s", getconfig("CGIDIR"), result);
 		return 0;
 	}
 
